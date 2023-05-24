@@ -15,6 +15,8 @@ const upgradesTracker = document.querySelector('#upgrades');
 const upgradeList = document.querySelector('#upgradelist');
 const msgbox = document.querySelector('#msgbox');
 const audioAchievement = document.querySelector('#swoosh');
+const soulsTracker = document.querySelector('#souls');
+const soulsOnRebirthTracker = document.querySelector('#soulsOnRebirth');
 
 /* Följande variabler använder vi för att hålla reda på hur mycket pengar som
  * spelaren, har och tjänar.
@@ -24,12 +26,18 @@ const audioAchievement = document.querySelector('#swoosh');
  * Läs mer: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let
  */
 let money = 0;
-let moneyPerClick = 1;
-let moneyPerSecond = 0;
+let cilckBase = 1;
+let multiplyer = 1;
+let moneyPerClick;
+let secondBase = 0;
+let moneyPerSecond;
 let acquiredUpgrades = 0;
 let last = 0;
 let numberOfClicks = 0; // hur många gånger har spelare eg. klickat
 let active = false; // exempel för att visa att du kan lägga till klass för att indikera att spelare får valuta
+let souls = 0;
+let soulMod = 0;
+let reset = '';
 
 // likt upgrades skapas här en array med objekt som innehåller olika former
 // av achievements.
@@ -37,17 +45,17 @@ let active = false; // exempel för att visa att du kan lägga till klass för a
 
 let achievements = [
     {
-        description: 'Museet är redo att öppna, grattis! ',
+        description: 'The research is expanding, knowledge is Power! ',
         requiredUpgrades: 1,
         acquired: false,
     },
     {
-        description: 'Nu börjar det likna något, fortsätt gräva!',
+        description: 'We need to expand even more, keep on going!',
         requiredUpgrades: 10,
         acquired: false,
     },
     {
-        description: 'Klickare, med licens att klicka!',
+        description: 'Clicker with knowledge!',
         requiredClicks: 10,
         acquired: false,
     },
@@ -90,10 +98,17 @@ clickerButton.addEventListener(
  * Sist i funktionen så kallar den på sig själv igen för att fortsätta uppdatera.
  */
 function step(timestamp) {
+    moneyPerClick = cilckBase * (multiplyer + soulMod);
+    moneyPerSecond = secondBase * (multiplyer + soulMod);
+
+    soulMod = Math.pow(1.5, (souls / 100)) - 1;
+
     moneyTracker.textContent = Math.round(money);
-    mpsTracker.textContent = moneyPerSecond;
-    mpcTracker.textContent = moneyPerClick;
+    mpsTracker.textContent = Math.round(moneyPerSecond,3);
+    mpcTracker.textContent = Math.round(moneyPerClick,3);
     upgradesTracker.textContent = acquiredUpgrades;
+    soulsTracker.textContent = souls;
+    soulsOnRebirthTracker.textContent = Math.round(money / 100_000_000)
 
     if (timestamp >= last + 1000) {
         money += moneyPerSecond;
@@ -115,17 +130,11 @@ function step(timestamp) {
         if (achievement.acquired) {
             return false;
         }
-        if (
-            achievement.requiredUpgrades &&
-            acquiredUpgrades >= achievement.requiredUpgrades
-        ) {
+        if (achievement.requiredUpgrades && acquiredUpgrades >= achievement.requiredUpgrades) {
             achievement.acquired = true;
             message(achievement.description, 'achievement');
             return false;
-        } else if (
-            achievement.requiredClicks &&
-            numberOfClicks >= achievement.requiredClicks
-        ) {
+        } else if (achievement.requiredClicks && numberOfClicks >= achievement.requiredClicks) {
             achievement.acquired = true;
             message(achievement.description, 'achievement');
             return false;
@@ -161,26 +170,72 @@ window.addEventListener('load', (event) => {
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer
  */
-upgrades = [
+let upgrades = [
     {
-        name: 'Sop',
+        name: 'T1 Assembler',
         cost: 10,
-        amount: 1,
+        clicks: 1,
+        upg: 0,
     },
     {
-        name: 'Kvalitetsspade',
-        cost: 50,
-        clicks: 2,
-    },
-    {
-        name: 'Skottkärra',
+        name: 'T2 Assembler',
         cost: 100,
-        amount: 10,
+        clicks: 5,
+        upg: 0,
     },
     {
-        name: 'Grävmaskin',
-        cost: 1000,
-        amount: 100,
+        name: 'T3 Assembler',
+        cost: 1_500,
+        clicks: 50,
+        upg: 0,
+    },
+    {
+        name: 'T4 Assembler',
+        cost: 100_000,
+        clicks: 1_000,
+        upg: 0,
+    },
+    {
+        name: 'Starter base',
+        cost: 50,
+        amount: 1,
+        upg: 0,
+    },
+    {
+        name: 'Medium Base',
+        cost: 2_000,
+        amount: 50,
+        upg: 0,
+    },
+    {
+        name: 'Advanced base',
+        cost: 1_000_000,
+        amount: 1_000,
+        upg: 0,
+    },
+    {
+        name: 'T1 Effciency Module',
+        cost: 10,
+        modifier: 0.5,
+        upg: 0,
+    },
+    {
+        name: 'T2 Effciency Module',
+        cost: 1_000,
+        modifier: 5,
+        upg: 0,
+    },
+    {
+        name: 'T3 Effciency Module',
+        cost: 100_000,
+        modifier: 10,
+        upg: 0,
+    },
+    {
+        name: 'Rebirth',
+        cost: 100_000_000,
+        Soul: 10,
+        upg: 0,
     },
 ];
 
@@ -210,19 +265,48 @@ function createCard(upgrade) {
     const cost = document.createElement('p');
     if (upgrade.amount) {
         header.textContent = `${upgrade.name}, +${upgrade.amount} per sekund.`;
-    } else {
+    } else if (upgrade.clicks) {
         header.textContent = `${upgrade.name}, +${upgrade.clicks} per klick.`;
+    } else if (upgrade.modifier) {
+        header.textContent = `${upgrade.name}, +${upgrade.modifier}%.`
+    } else {
+        header.textContent = `${upgrade.name}, Start over from 0`
     }
-    cost.textContent = `Köp för ${upgrade.cost} benbitar.`;
+    cost.textContent = `Köp för ${upgrade.cost} flasks.`;
 
     card.addEventListener('click', (e) => {
-        if (money >= upgrade.cost) {
+        if (money >= (Math.pow(1.5,upgrade.upg) * upgrade.cost)) {
+            if (upgrade.Soul) {
+                cilckBase = 1;
+                secondBase = 0;
+                souls += Math.round(money / 100_000_000);
+                money = 0;
+                multiplyer = 1;
+                active = false;
+
+                reset = document.querySelector('#upgradelist');
+
+                reset.innerHTML = '';
+
+                upgrades.forEach((upgrade) => {
+                    upgrade.upg = 0;
+                    upgradeList.appendChild(createCard(upgrade));
+                });
+
+            } else if (upgrade.modifier) {
+                money -= (Math.pow(1.5,upgrade.upg) * upgrade.cost);
+                upgrade.upg++;
+                multiplyer += (upgrade.modifier / 100);
+                cost.textContent = 'Köp för ' + (Math.pow(1.5,upgrade.upg) * upgrade.cost) + ' flasks';
+            } else {
+                money -= (Math.pow(1.5,upgrade.upg) * upgrade.cost);
+                upgrade.upg++;
+                cost.textContent = 'Köp för ' + (Math.pow(1.5,upgrade.upg) * upgrade.cost) + ' flasks';
+                secondBase += upgrade.amount ? upgrade.amount : 0;
+                cilckBase += upgrade.clicks ? upgrade.clicks : 0;
+            }
             acquiredUpgrades++;
-            money -= upgrade.cost;
-            upgrade.cost *= 1.5;
-            cost.textContent = 'Köp för ' + upgrade.cost + ' benbitar';
-            moneyPerSecond += upgrade.amount ? upgrade.amount : 0;
-            moneyPerClick += upgrade.clicks ? upgrade.clicks : 0;
+
             message('Grattis du har köpt en uppgradering!', 'success');
         } else {
             message('Du har inte råd.', 'warning');
