@@ -59,6 +59,7 @@ audio {
     font-size: var(--step--1);
 }
 .hero {
+    position: relative;
     display: grid;
     grid-template-areas: 'stack';
 }
@@ -76,10 +77,20 @@ audio {
 }
 
 .hero > picture {
+    position: relative;
     place-self: center;
     grid-area: stack;
     width: 100%;
     height: 100%;
+    
+}
+
+.contrast{
+    position: absolute;
+    width: 100%;
+    background-color: var(--color-dark);
+    height: 100%;
+    z-index: -1;
 }
 
 .hero img {
@@ -94,7 +105,7 @@ audio {
     place-self: end;
     padding: var(--space-m-l) 0;
     color: var(--color-light);
-    background-color: var(--color-dark);
+    z-index: 5;
 }
 
 @media (max-width: 30rem) {
