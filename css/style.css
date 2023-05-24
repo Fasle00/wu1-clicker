@@ -94,6 +94,7 @@ audio {
     place-self: end;
     padding: var(--space-m-l) 0;
     color: var(--color-light);
+    background-color: var(--color-dark);
 }
 
 @media (max-width: 30rem) {
