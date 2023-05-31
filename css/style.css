@@ -10,7 +10,7 @@
     --step--1: clamp(0.94rem, calc(0.94rem + 0vw), 0.94rem);
     --step-0: clamp(1.13rem, calc(1.08rem + 0.22vw), 1.25rem);
     --step-1: clamp(1.35rem, calc(1.24rem + 0.55vw), 1.67rem);
-    --step-2: clamp(1.62rem, calc(1.41rem + 1.05vw), 2.22rem);
+    --step-2: clamp(1.32rem, calc(1.11rem + 1.05vw), 1.92rem);
 
     --space-xs-s: clamp(0.88rem, calc(0.74rem + 0.65vw), 1.25rem);
     --space-s-m: clamp(1.13rem, calc(0.86rem + 1.3vw), 1.88rem);
@@ -150,7 +150,7 @@ audio {
 #game-button {
     width: var(--space-4xl-5xl);
     height: var(--space-4xl-5xl);
-    font-size: var(--step-2);
+    font-size: 1.6rem;
     background: url('../img/fly-d-LZmUUmjQH28-unsplash.jpg');
     background-size: cover;
     background-position: center;
