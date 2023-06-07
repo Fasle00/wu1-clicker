@@ -58,3 +58,9 @@ Se classroom.
 GLHF!
 
 Tack [Malte](https://github.com/Mafrans) för lite ideér.
+
+# title: 'The Researcher',
+## tagline: 'En clicker om en forskare',
+## url: [https://fasle00.github.io/wu1-clicker/](https://fasle00.github.io/wu1-clicker/),
+## git: [https://github.com/Fasle00/wu1-clicker](https://github.com/Fasle00/wu1-clicker),
+## author: 'Fabian'
